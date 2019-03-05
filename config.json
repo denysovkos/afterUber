@@ -1,0 +1,10 @@
+{
+    "google": {
+        "token": "AIzaSyDAo-4hHo4ZKaizRpVljmCVBDxpi-uEN9s",
+        "url": "https://maps.googleapis.com/maps/api/geocode/json?"
+    },
+    "uber": {
+        "token": "rXFtyR-_8FnRpknNVFkDlkb1Psi_B-bdVa2mD_Pf",
+        "url": "https://api.uber.com/v1.2/estimates/price?"
+    }
+}

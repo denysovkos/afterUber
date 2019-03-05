@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello World</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+      class MainComponent extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                from: '',
+                to: '',
+                data: null,
+                loading: false,
+                showList: false,
+                error: null
+            }
+        }
+            
+            handleChangeFrom = (event) => {
+                this.setState({from: event.target.value});
+            }
+
+            handleChangeTo = (event) => {
+                this.setState({to: event.target.value});
+            }
+
+            handleSearch = async () => {
+                this.setState({
+                    loading: true,
+                    showList: true
+                });
+                let result = await fetch('/v1/price', {
+                    headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify({from: this.state.from, to: this.state.to})
+                });
+
+                result = await result.json();
+                this.setState({
+                    loading: false,
+                    data: result.result || null,
+                    error: result.error || null
+                });
+            }
+
+            render() {
+                return (
+                    <div>
+                    <form>
+                        <Input value={this.state.from} handleChange={this.handleChangeFrom} label="From: "/>
+                        <Input value={this.state.to} handleChange={this.handleChangeTo} label="To: "/>    
+                    </form>
+
+                    <Button search={this.handleSearch} />
+                    <List loading={this.state.loading} result={this.state.data} showList={this.state.showList} error={this.state.error} />
+                    </div>
+                )
+            }
+        }
+
+      class Input extends React.Component {
+        constructor(props) {
+            super(props);
+        }
+
+        render() {
+            return (
+                <div>
+                    <input type="text" name="name" className="question" id="nme" value={this.props.value} onChange={this.props.handleChange} />
+                    <label htmlFor="nme">
+                        <span>{this.props.label}</span>
+                    </label>
+                </div>
+            )
+        }
+      }
+
+      class Button extends React.Component {
+        constructor(props) {
+            super(props);
+        }
+
+        render() {
+            return(
+                <button className="myButton" onClick={this.props.search}>Search for discount</button>
+            )
+        }
+    }
+
+    class List extends React.Component {
+        constructor(props) {
+            super(props);
+        }
+
+        render() {
+            if (!this.props.showList) {
+                return null;
+            } else if (this.props.error) {
+                return (<p><strong className="error">{this.props.error}</strong></p>)
+            } else if (this.props.loading) {
+                return <h1>Loading ...</h1>;
+            } else {
+                return this.props.result.map((item) => <Card key={`${item.estimate}-${item.display_name}`} estimate={item.estimate} display_name={item.display_name} />);
+            }
+        }
+    }
+
+    class Card extends React.Component {
+        constructor(props) {
+            super(props);
+        }
+
+        calculateDiscount = (val) => {
+            return val.replace('$', '').split('-').map(element => (Number(element) * 0.8).toFixed(2)).join('-');
+        }
+        
+        render() {
+            return(
+                <p>
+                    <strong>After{this.props.display_name}</strong> Regular price <strike>{this.props.estimate}</strike> New price: ${this.calculateDiscount(this.props.estimate)}
+                </p>
+            )
+        }
+    }
+
+      ReactDOM.render(
+        <MainComponent />,
+        document.getElementById('root')
+      );
+
+    </script>
+  </body>
+</html>
